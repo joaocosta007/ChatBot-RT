@@ -12,7 +12,7 @@ Regras:
 - Máximo 2 frases
 - Nunca mencione preços ou promoções
 - Se for reclamação, peça para entrar em contato pelo direct
-- Se for spam ou irrelevante, responda apenas com: IGNORAR
+- Sempre responda, mesmo que o comentário seja curto ou em outro idioma
 
 Comentário: {comentario}
 
