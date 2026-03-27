@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 from config import VERIFY_TOKEN
 from gemini import gerar_resposta
@@ -27,7 +28,7 @@ def verificar_webhook():
 @app.route("/webhook", methods=["POST"])
 def receber_comentario():
     data = request.json
-    print("Webhook recebido:", data)  # Log para debug
+    print("Webhook recebido:", data)
 
     try:
         entry = data.get("entry", [])
@@ -75,3 +76,8 @@ def receber_comentario():
     except Exception as e:
         print(f"Erro: {e}")
         return jsonify({"status": "erro", "detalhe": str(e)}), 500
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(debug=True, host="0.0.0.0", port=port)
