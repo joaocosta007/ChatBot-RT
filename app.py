@@ -15,7 +15,6 @@ Nunca fale sobre concorrentes.
 
 @app.route("/webhook", methods=["GET"])
 def verificar_webhook():
-    """Verificação inicial exigida pela Meta"""
     mode = request.args.get("hub.mode")
     token = request.args.get("hub.verify_token")
     challenge = request.args.get("hub.challenge")
@@ -58,9 +57,7 @@ def receber_comentario():
         if not comentario_texto or not comment_id:
             return jsonify({"status": "dados incompletos"}), 200
 
-        if len(comentario_texto) < 10:
-            return jsonify({"status": "muito curto"}), 200
-
+        # Removido filtro de tamanho mínimo
         resposta = gerar_resposta(comentario_texto, CONTEXTO_MARCA)
         print(f"Resposta gerada: {resposta}")
 
