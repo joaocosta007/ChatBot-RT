@@ -26,40 +26,52 @@ def verificar_webhook():
 
 @app.route("/webhook", methods=["POST"])
 def receber_comentario():
-    """Recebe os eventos do Instagram"""
     data = request.json
+    print("Webhook recebido:", data)  # Log para debug
 
     try:
-        changes = data["entry"][0]["changes"][0]
-        
-        # Só processa comentários (ignora outros eventos)
-        if changes["field"] != "comments":
-            return jsonify({"status": "ignorado"}), 200
+        entry = data.get("entry", [])
+        if not entry:
+            return jsonify({"status": "sem entry"}), 200
 
-        comentario_texto = changes["value"]["text"]
-        comment_id = changes["value"]["id"]
+        changes = entry[0].get("changes", [])
+        if not changes:
+            return jsonify({"status": "sem changes"}), 200
 
-        # Ignora comentários muito curtos (emojis, spam)
+        change = changes[0]
+        field = change.get("field", "")
+        value = change.get("value", {})
+
+        print(f"Campo: {field}")
+        print(f"Valor: {value}")
+
+        if field != "comments":
+            return jsonify({"status": f"campo ignorado: {field}"}), 200
+
+        comentario_texto = value.get("text", "")
+        comment_id = value.get("id", "")
+
+        print(f"Comentário: {comentario_texto}")
+        print(f"Comment ID: {comment_id}")
+
+        if not comentario_texto or not comment_id:
+            return jsonify({"status": "dados incompletos"}), 200
+
         if len(comentario_texto) < 10:
             return jsonify({"status": "muito curto"}), 200
 
-        # Gera resposta com Gemini
         resposta = gerar_resposta(comentario_texto, CONTEXTO_MARCA)
+        print(f"Resposta gerada: {resposta}")
 
-        # Ignora se o Gemini decidiu não responder
         if resposta == "IGNORAR":
             return jsonify({"status": "ignorado pelo gemini"}), 200
 
-        # Posta a resposta no Instagram
         sucesso = responder_comentario(comment_id, resposta)
+        print(f"Postado com sucesso: {sucesso}")
 
         status = "respondido" if sucesso else "erro ao postar"
         return jsonify({"status": status}), 200
 
     except Exception as e:
         print(f"Erro: {e}")
-        return jsonify({"status": "erro"}), 500
-
-
-if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+        return jsonify({"status": "erro", "detalhe": str(e)}), 500
